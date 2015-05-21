@@ -12,15 +12,20 @@ This SDK is implemented for C-Language only, so I tried to ported it to Python.
    1. Power on your JumpingSumo and connect to the Wifi connection of the robot.
    2. start Python
    3. load library 
-      >> import sumo
+     - >> import sumo
+
    4. create controller; cnt
-      >> cnt = sumo.SumoController('MyCtrl')
+     - >> cnt = sumo.SumoController('MyCtrl')
+
    5. connect to the robot
-      >> cnt.connect()
+     - >> cnt.connect()
+
    6. call 'move' function to confirm connection...
-      >> cnt.move(10)
+     - >> cnt.move(10)
+
    7. stop moving
-      >> cnt.move(0)
+     - >> cnt.move(0)
+
    8. please try to activate 'move', 'action', 'jump', 'posture' functions...
      - cnt.move(speed, turn_spped) ; speed = [-100:100],turn_speed = [-100:100]
      - cnt.action(param)           ; param = [0:9]
