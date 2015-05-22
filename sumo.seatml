@@ -96,6 +96,7 @@ sumo_ctrl.posture(0)
 sumo_ctrl.posture(1)
       </script>
     </button>
+
     <button label="Kicker">
       <script>
 sumo_ctrl.posture(2)
@@ -113,10 +114,29 @@ sumo_ctrl.posture(2)
 seat.clearText("main_mode:textOut")
       </script>
     </button>
- 
+
+    <rule>
+      <key>Exit</key>
+      <script>
+sumo_ctrl.terminate()
+sumo_ctrl=None
+      </script>
+       <statetransition>init_mode</statetransition>
+    </rule>
+
+
     <rule source="str_in">
       <script>
 seat.appendText("main_mode:textOut", rtc_in_data.data+"\n")
+
+vals = rtc_in_data.data.split(',')
+
+if len(vals) == 2:
+  sumo_ctrl.move(int(vals[0]),int(vals[1]))
+elif len(vals) == 3:
+  sumo_ctrl.move(int(vals[0]),int(vals[1]), int(vals[2]))
+else:
+  sumo_ctrl.move(0,0)
       </script>
     </rule>
 
