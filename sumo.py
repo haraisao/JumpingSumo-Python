@@ -126,7 +126,7 @@ class SocketAdaptor(threading.Thread):
   #
   # Receive
   #
-  def recieve_data(self, bufsize=8192, timeout=1.0):
+  def receive_data(self, bufsize=8192, timeout=1.0):
     data = None
     try:
       if self.wait_for_read(timeout) == 1  :
@@ -137,18 +137,18 @@ class SocketAdaptor(threading.Thread):
           return  -1
 
     except socket.error:
-      print "socket.error in recieve_data"
+      print "socket.error in receive_data"
       self.terminate()
 
     except:
-      print "Error in recieve_data"
+      print "Error in receive_data"
       self.terminate()
 
     return data
 
   def recv_data(self, bufsize=1024, timeout=1.0):
     while True:
-      data = self.recieve_data(bufsize, timeout)
+      data = self.receive_data(bufsize, timeout)
 
       if data is None or data == -1:
         self.reader.clearBuffer()
@@ -180,7 +180,7 @@ class SocketAdaptor(threading.Thread):
 
   def run(self):
     if self.client_adaptor: 
-      self.message_reciever()
+      self.message_receiver()
     else:
       self.accept_service_loop()
 
@@ -231,11 +231,11 @@ class SocketAdaptor(threading.Thread):
     self.close()
     return 
   #
-  #  Background job ( message reciever )
+  #  Background job ( message receiver )
   #
-  def message_reciever(self):
+  def message_receiver(self):
     while self.mainloop:
-      data = self.recieve_data() 
+      data = self.receive_data() 
 
       if data  == -1:
         self.terminate()
@@ -314,17 +314,18 @@ class SumoSender(SocketAdaptor):
     self.mv_turn = turn
 
   def mkcmd1(self, klass, func, param):
-    self.parser.initCommand('\x04\x0f\x00\x0e\x00\x00\x00\x03')
+    self.parser.initCommand('\x04\x0b\x00\x0f\x00\x00\x00\x03')
     self.parser.marshal('bHI',klass, func, param)
 
     self.parser.setSeqId(self.cmd_seq )
-    self.move_seq = (self.cmd_seq + 1 ) % 256
+    self.cmd_seq = (self.cmd_seq + 1 ) % 256
 
     return self.parser.getEncodedCommand()
 
   def posture(self, param):
 # param = enum[standing, jumper, kicker]
     cmd = self.mkcmd1(0, 1,param)
+#    print[cmd]
     self.cmd_activate = True
     self.send(cmd)
     self.cmd_activate = False
@@ -332,6 +333,7 @@ class SumoSender(SocketAdaptor):
   def action(self, param):
 # param = enum[stop, spin, tap, slowshake, metronome, oudulation, spinjump, spintoposture, spiral,slalom]
     cmd = self.mkcmd1(2, 4, param)
+#    print[cmd]
     self.cmd_activate = True
     self.send(cmd)
     self.cmd_activate = False
@@ -339,6 +341,7 @@ class SumoSender(SocketAdaptor):
   def jump(self, param):
 # param = enum[long, high]
     cmd = self.mkcmd1(2, 3, param)
+#    print[cmd]
     self.cmd_activate = True
     self.send(cmd)
     self.cmd_activate = False
@@ -393,10 +396,10 @@ class SumoSender(SocketAdaptor):
     print "ControlSender stopped"
 
 #
-#  SumoSockReciever
-#      SocketAdaptor <---- SumoSockReciever
+#  SumoSockReceiver
+#      SocketAdaptor <---- SumoSockReceiver
 #
-class SumoReciever(SocketAdaptor):
+class SumoReceiver(SocketAdaptor):
   def __init__(self, owner, host, port):
     if owner:
       SocketAdaptor.__init__(self, SumoCommReader(owner), owner.name+"In", host, port, False) 
@@ -430,7 +433,7 @@ class SumoReaderBase:
       self.debug = False
 
   #
-  #  parse recieved data, called by SocketAdaptor
+  #  parse received data, called by SocketAdaptor
   #
   def parse(self, data):
     if self.debug:
@@ -811,12 +814,12 @@ class SumoController:
 
     myip = getipaddr(host, 0xffffff00)
     self.init_sock = SocketAdaptor(None, name, host, self.initport) 
-    self.reciever = SumoReciever(self, myip, self.recvport) 
+    self.receiver = SumoReceiver(self, myip, self.recvport) 
     self.sender = SumoSender(self, host, self.sendport) 
 
   def connect(self):
-    if self.reciever.bind() < 0 : return -1
-    self.recvport = self.reciever.port
+    if self.receiver.bind() < 0 : return -1
+    self.recvport = self.receiver.port
     if self.init_sock.connect(False) != 1 : return -1
 
     init_msg={}
@@ -825,7 +828,7 @@ class SumoController:
     init_msg["d2c_port"] = self.recvport
 
     self.init_sock.send(json.dumps(init_msg))
-    res = self.init_sock.recieve_data()
+    res = self.init_sock.receive_data()
 
     if res and res != -1: 
       self.config = json.loads(res[:len(res)-1])
@@ -838,7 +841,7 @@ class SumoController:
       self.init_sock.terminate()
       return
 
-    self.reciever.start()
+    self.receiver.start()
     self.sender.send(self.sender.date_sync())
     self.sender.send(self.sender.time_sync())
     self.sender.start()
@@ -860,7 +863,7 @@ class SumoController:
     self.sender.move(0, 0)
 
   def terminate(self):
-    self.reciever.terminate()
+    self.receiver.terminate()
     self.sender.terminate()
 
 ############################################################################

@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<seatml>
+  <general name="SimpleIO">
+    <adaptor name="str_out" type="rtcout" datatype="TimedString" />
+    <adaptor name="str_in" type="rtcin" datatype="TimedString" />
+
+    <script>
+<!--
+import sumo
+
+global sumo_ctrl
+sumo_ctrl=sumo.SumoController("MySumo")
+-->
+    </script>
+
+  </general>
+
+  <state name="init_mode">
+
+    <label text="JumpingSumo Controller" colspan="4" bg_color="blue" />
+
+    <brk />
+    <label text="Sumo:" />
+    <button label="Connect">
+      <script>
+sumo_ctrl=sumo.SumoController("MySumo")
+sumo_ctrl.connect()
+      </script>
+       <statetransition>main_mode</statetransition>
+    </button>
+
+  </state>
+
+  <state name="main_mode">
+
+    <label text="JumpingSumo Controller" colspan="4" bg_color="blue" />
+
+    <brk />
+    <label text="Sumo:" />
+    <button label="Terminate">
+      <script>
+sumo_ctrl.terminate()
+sumo_ctrl=None
+      </script>
+       <statetransition>init_mode</statetransition>
+    </button>
+    <brk />
+    <label text="move:" />
+    <button label="Forward">
+      <script>
+sumo_ctrl.move(50)
+      </script>
+    </button>
+    <button label="Stop">
+      <script>
+sumo_ctrl.move(0)
+      </script>
+    </button>
+    <button label="Back">
+      <script>
+sumo_ctrl.move(-50)
+      </script>
+    </button>
+    <brk />
+
+    <label text="turn:" />
+    <button label="Left">
+      <script>
+sumo_ctrl.move(0,50)
+      </script>
+    </button>
+    <button label="Stop">
+      <script>
+sumo_ctrl.move(0,0)
+      </script>
+    </button>
+    <button label="Right">
+      <script>
+sumo_ctrl.move(0,-50)
+      </script>
+    </button>
+    <brk />
+
+    <label text="Coming Text:" />
+    <text id="textOut" width="50" height="5" colspan="3" >
+    </text>
+    <brk />
+
+    <button label="Clear">
+      <script>
+seat.clearText("main_mode:textOut")
+      </script>
+    </button>
+ 
+    <rule source="str_in">
+      <script>
+seat.appendText("main_mode:textOut", rtc_in_data.data+"\n")
+      </script>
+    </rule>
+
+  </state>
+
+</seatml>
