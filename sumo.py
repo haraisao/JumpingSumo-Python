@@ -307,14 +307,12 @@ class SumoSender(SocketAdaptor):
     self.mv_speed = 0
     self.mv_turn = 0
 
+    self.move_counter = 0
+
     self.cmd_activate = False
 
-  def move(self, sp, turn=0):
-    self.mv_speed = sp
-    self.mv_turn = turn
-
   def mkcmd1(self, klass, func, param):
-    self.parser.initCommand('\x04\x0b\x00\x0f\x00\x00\x00\x03')
+    self.parser.initCommand('\x02\x0b\x00\x0f\x00\x00\x00\x03')
     self.parser.marshal('bHI',klass, func, param)
 
     self.parser.setSeqId(self.cmd_seq )
@@ -346,7 +344,16 @@ class SumoSender(SocketAdaptor):
     self.send(cmd)
     self.cmd_activate = False
 
+  def move(self, sp, turn=0, counter=-1):
+    self.mv_speed = sp
+    self.mv_turn = turn
+    self.move_counter = counter
+
   def move_cmd(self):
+    if self.move_counter == 0 :
+      self.mv_speed = 0 
+      self.mv_turn  = 0
+
     self.parser.initCommand('\x02\x0a\x00\x0e\x00\x00\x00\x03\x00\x00\x00')
     if self.mv_speed == 0 and self.mv_turn == 0 :
       self.parser.marshal('bbb', 0, 0, 0)
@@ -385,7 +392,10 @@ class SumoSender(SocketAdaptor):
     self.send(self.move_cmd())
 
     while self.mainloop:
+      if self.move_counter > 0:
+        self.move_counter -= 1
       if not self.cmd_activate and self.send(self.move_cmd()) is None:
+
         self.terminate()
       time.sleep(self.intval)
     print "Sender '%s' thread is terminated." % (self.name,)
@@ -847,8 +857,8 @@ class SumoController:
     self.sender.start()
     return
 
-  def move(self, sp, turn=0):
-    self.sender.move(sp, turn)
+  def move(self, sp, turn=0, counter=-1):
+    self.sender.move(sp, turn, counter)
 
   def posture(self, param):
     self.sender.posture(param)

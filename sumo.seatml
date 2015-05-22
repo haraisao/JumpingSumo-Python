@@ -28,7 +28,11 @@ sumo_ctrl.connect()
       </script>
        <statetransition>main_mode</statetransition>
     </button>
-
+    <button label="Exit">
+      <script>
+seatmgr.manager.shutdown()
+      </script>
+    </button>
   </state>
 
   <state name="main_mode">
@@ -48,7 +52,7 @@ sumo_ctrl=None
     <label text="move:" />
     <button label="Forward">
       <script>
-sumo_ctrl.move(50)
+sumo_ctrl.move(30)
       </script>
     </button>
     <button label="Stop">
@@ -58,7 +62,7 @@ sumo_ctrl.move(0)
     </button>
     <button label="Back">
       <script>
-sumo_ctrl.move(-50)
+sumo_ctrl.move(-30)
       </script>
     </button>
     <brk />
@@ -66,7 +70,7 @@ sumo_ctrl.move(-50)
     <label text="turn:" />
     <button label="Left">
       <script>
-sumo_ctrl.move(0,50)
+sumo_ctrl.move(0,50,48)
       </script>
     </button>
     <button label="Stop">
@@ -76,7 +80,25 @@ sumo_ctrl.move(0,0)
     </button>
     <button label="Right">
       <script>
-sumo_ctrl.move(0,-50)
+sumo_ctrl.move(0,-50, 48)
+      </script>
+    </button>
+    <brk />
+
+    <label text="Posture:" />
+    <button label="Standing">
+      <script>
+sumo_ctrl.posture(0)
+      </script>
+    </button>
+    <button label="Jumper">
+      <script>
+sumo_ctrl.posture(1)
+      </script>
+    </button>
+    <button label="Kicker">
+      <script>
+sumo_ctrl.posture(2)
       </script>
     </button>
     <brk />
